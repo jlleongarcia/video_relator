@@ -1,0 +1,39 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Input recordings and videos (whatever their format: audio, video, subtitles, notes)
+media/
+
+# Claude Code settings for this machine only (local paths, permissions)
+.claude/settings.local.json
+
+# Any multimedia files or large datasets
+*.mp4
+*.mov
+*.mkv
+*.avi
+*.webm
+*.wav
+*.mp3
+*.m4a
+*.jpg
+*.png
+
+# Downloaded speech model files
+models/
+
+# Generated results: ignore everything inside output/ but keep the folder itself
+output/*
+!output/.gitkeep
+
+
+# Cloned voices (reference audio of real people): keep them out of the repository
+voices/

@@ -1,0 +1,35 @@
+[project]
+name = "voice-clone"
+version = "0.1.0"
+description = "Clone the voices of a recording and speak any text with them (Qwen3-TTS, local GPU)."
+requires-python = "==3.12.*"
+dependencies = [
+    "faster-whisper>=1.2.1",
+    "imageio-ffmpeg>=0.6.0",
+    "librosa>=0.11.0",
+    "numpy>=2.0",
+    "qwen-tts==0.1.1",
+    "scikit-learn>=1.5",
+    "scipy>=1.13",
+    "soundfile>=0.13",
+    "speechbrain>=1.1",
+    "torch>=2.6",
+    "torchaudio>=2.6",
+]
+
+[project.scripts]
+voice-clone = "voice_clone.cli:main"
+
+# CUDA 12.6 builds: the newest PyTorch builds that still run on Pascal GPUs (GTX 10xx).
+[tool.uv.sources]
+torch = { index = "pytorch-cu126" }
+torchaudio = { index = "pytorch-cu126" }
+
+[[tool.uv.index]]
+name = "pytorch-cu126"
+url = "https://download.pytorch.org/whl/cu126"
+explicit = true
+
+[build-system]
+requires = ["uv_build>=0.11.16,<0.12"]
+build-backend = "uv_build"
