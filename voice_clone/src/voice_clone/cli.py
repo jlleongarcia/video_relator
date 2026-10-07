@@ -102,7 +102,7 @@ def _cmd_dub(args: argparse.Namespace) -> None:
     out = args.out or _dub_dir(args.recording) / f"{args.recording.stem}_{args.language}.wav"
     try:
         log = dub(args.script, out, duration=duration, language=args.language, takes=args.takes,
-                  good_enough=args.good_enough)
+                  seed=args.seed, good_enough=args.good_enough)
     except (KeyError, ValueError) as error:
         raise UserError(str(error).strip("'\"")) from None
     sped = [e for e in log if e["speedup"] > 1]
@@ -174,6 +174,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--takes", type=int, default=3, help="at most N takes per sentence group (default: 3)")
     p.add_argument("--good-enough", type=float, default=None,
                    help="stop trying more takes once one is complete and at least this alike")
+    p.add_argument("--seed", type=int, default=0,
+                   help="another seed gives different takes; to redo a block, delete its files in blocks_<language>/")
     p.set_defaults(func=_cmd_dub)
 
     p = sub.add_parser("list", help="list the stored voices")
