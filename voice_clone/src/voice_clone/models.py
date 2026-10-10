@@ -75,6 +75,20 @@ def transcribe(audio16k: np.ndarray, language: str, prompt: str | None = None, s
     return " ".join(s.text.strip() for s in segments).strip()
 
 
+KOKORO_FILES = ("kokoro-v1.0.onnx", "voices-v1.0.bin")  # shared with video-relator, which downloads them
+
+
+@cache
+def kokoro():
+    from kokoro_onnx import Kokoro
+
+    paths = [MODELS_DIR / name for name in KOKORO_FILES]
+    if missing := [p for p in paths if not p.exists()]:
+        raise ValueError(f"{', '.join(map(str, missing))} not found: run `video-relator narrate` with a Kokoro "
+                         f"voice once to download them")
+    return Kokoro(*map(str, paths))
+
+
 @cache
 def tts(size: str = "1.7b"):
     from qwen_tts import Qwen3TTSModel

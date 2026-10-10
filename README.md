@@ -130,6 +130,9 @@ uv run --project voice_clone voice-clone dub media/recording.mp3 --script output
   runs over is sped up by at most 15%; anything left pushes the next block a little later.
 - The voices speak the new language with the original speaker's timbre and a light accent of their own
   language.
+- A minor speaker whose own voice is not needed can get a stock Kokoro voice instead: write its name as the
+  block's speaker (e.g. `[37] bf_emma 11:53.70-11:58.40`). `af_*`/`bf_*` are American/British English women,
+  `am_*`/`bm_*` men. The diarization of `transcribe` is only a first guess: check the speaker of every block.
 
 - Voices live in `voices/<name>/` (git-ignored: they are recordings of real people). Only clone
   voices you have permission to use.

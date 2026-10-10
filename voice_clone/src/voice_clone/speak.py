@@ -18,7 +18,7 @@ import numpy as np
 import torch
 
 from voice_clone import models
-from voice_clone.voices import Voice, load
+from voice_clone.voices import VOICES_DIR, Voice, load
 
 _LANGUAGE_NAME = {"es": "Spanish", "en": "English", "fr": "French", "de": "German", "it": "Italian",
                   "pt": "Portuguese", "ru": "Russian", "ja": "Japanese", "ko": "Korean", "zh": "Chinese"}
@@ -110,10 +110,34 @@ def _speak_piece(voice: Voice, text: str, takes: int, seed: int, check: bool, *,
 
 _voices: dict[str, Voice] = {}
 
+# Stock (not cloned) Kokoro voices, named <language letter><gender letter>_<name>, e.g. af_heart, bf_emma:
+# for minor speakers whose own voice is not needed. The letters give espeak's phonemizer language.
+_KOKORO_VOICE = re.compile(r"^([abefhijpz][fm])_\w+$")
+_KOKORO_LANGUAGE = {"af": "en-us", "am": "en-us", "bf": "en-gb", "bm": "en-gb", "ef": "es", "em": "es",
+                    "ff": "fr-fr", "if": "it", "im": "it", "pf": "pt-br", "pm": "pt-br"}
+
+
+def _speak_kokoro(text: str, voice: str) -> tuple[np.ndarray, int, dict]:
+    tts = models.kokoro()
+    if voice not in tts.get_voices():
+        raise KeyError(f"unknown Kokoro voice '{voice}' (available: {', '.join(sorted(tts.get_voices()))})")
+    out, rate = [], 24000
+    for piece in parse(text, voice):
+        x, rate = tts.create(piece.text, voice=voice, lang=_KOKORO_LANGUAGE[voice[:2]])
+        out += [_level(x.astype(np.float32)), np.zeros(int(_PAUSE["sentence"] * rate), np.float32)]
+    audio = np.concatenate(out[:-1])
+    peak = np.abs(audio).max()
+    return (audio * 0.99 / peak if peak > 0.99 else audio), rate, {}
+
 
 def speak_block(text: str, voice: str, *, language: str, takes: int, seed: int,
                 good_enough: float | None = None) -> tuple[np.ndarray, int, dict]:
-    """One block of a dub: sentence groups, each its best take, joined with short pauses."""
+    """One block of a dub: sentence groups, each its best take, joined with short pauses.
+
+    `voice` is a stored (cloned) voice, or a stock Kokoro voice such as af_heart (spoken once, no takes).
+    """
+    if _KOKORO_VOICE.match(voice) and not (VOICES_DIR / voice).exists():
+        return _speak_kokoro(text, voice)
     if voice not in _voices:
         _voices[voice] = load(voice)
     out, infos, rate = [], [], 24000
